@@ -1,0 +1,32 @@
+{
+  "name": "yap",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Yap monorepo",
+  "scripts": {
+    "dev:infra": "docker compose up -d",
+    "stop:infra": "docker compose down",
+    "dev": "pnpm dev:services",
+    "dev:services": "pnpm -r --parallel --stream --filter @yap/auth --filter @yap/chat --filter @yap/presence --filter @yap/voice dev",
+    "dev:all": "pnpm -r --parallel --stream --filter @yap/auth --filter @yap/chat --filter @yap/presence --filter @yap/voice --filter @yap/frontend dev",
+    "dev:auth": "pnpm --filter @yap/auth dev",
+    "dev:chat": "pnpm --filter @yap/chat dev",
+    "dev:presence": "pnpm --filter @yap/presence dev",
+    "dev:voice": "pnpm --filter @yap/voice dev",
+    "dev:frontend": "pnpm --filter @yap/frontend dev",
+    "dev:web": "pnpm --filter @yap/frontend dev",
+    "build": "pnpm -r --if-present build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.2"
+  },
+  "packageManager": "pnpm@10.22.0"
+}
