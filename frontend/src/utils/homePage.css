@@ -1,0 +1,72 @@
+.home-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 77, 0, 0.14), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(255, 224, 51, 0.18), transparent 28%),
+    #fff8f0;
+  color: #160e00;
+}
+
+.home-card {
+  width: min(100%, 640px);
+  padding: 40px;
+  border: 2px solid #ecddd0;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 18px 50px rgba(255, 77, 0, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.home-kicker {
+  margin: 0 0 10px;
+  color: #ff4d00;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.home-card h2 {
+  margin: 0;
+  font-family: "Syne", sans-serif;
+  font-size: clamp(2.4rem, 5vw, 4.5rem);
+  line-height: 0.96;
+  letter-spacing: -0.06em;
+}
+
+.home-copy {
+  max-width: 34rem;
+  margin: 18px 0 28px;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #9c8c78;
+}
+
+.home-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: #ff4d00;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  box-shadow: 0 12px 30px rgba(255, 77, 0, 0.24);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.home-button:hover {
+  transform: translateY(-1px);
+  background: #e84500;
+  box-shadow: 0 16px 34px rgba(255, 77, 0, 0.28);
+}
+
+.home-button:focus-visible {
+  outline: 3px solid rgba(255, 77, 0, 0.22);
+  outline-offset: 3px;
+}

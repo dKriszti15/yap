@@ -1,11 +1,14 @@
 import { render } from "solid-js/web";
+import { Route, Router } from "@solidjs/router";
+import AuthPage from "./pages/authPage.jsx";
+import HomePage from "./pages/homePage.jsx";
 
 function App() {
   return (
-    <main style={{ padding: "2rem", "font-family": "system-ui, sans-serif" }}>
-      <h1>Yap</h1>
-      <p>Frontend shell is running. Next step: app layout and auth flow.</p>
-    </main>
+    <Router>
+      <Route path="/" component={HomePage} />
+      <Route path="/auth" component={AuthPage} />
+    </Router>
   );
 }
 
