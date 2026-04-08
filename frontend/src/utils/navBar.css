@@ -1,0 +1,117 @@
+@import url("https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap");
+
+.app-nav-shell,
+.app-nav-shell *,
+.app-nav-shell *::before,
+.app-nav-shell *::after {
+  box-sizing: border-box;
+}
+
+.app-nav-shell {
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 16px 16px 0;
+  background: #fff8f0;
+}
+
+.app-nav {
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 10px 14px;
+  border: 2px solid #ecddd0;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 30px rgba(255, 77, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.app-nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #160e00;
+  text-decoration: none;
+  font-family: "Syne", sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.app-nav-brand:focus-visible,
+.app-nav-link:focus-visible {
+  outline: 3px solid rgba(255, 77, 0, 0.22);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+.app-nav-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ff4d00;
+  margin-bottom: 4px;
+}
+
+.app-nav-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  border: 1.5px solid #ecddd0;
+  border-radius: 12px;
+  background: #fdf5ee;
+}
+
+.app-nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 9px;
+  text-decoration: none;
+  color: #9c8c78;
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+}
+
+.app-nav-link:hover {
+  color: #160e00;
+  transform: translateY(-1px);
+}
+
+.app-nav-link.active {
+  background: #fff;
+  color: #160e00;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 640px) {
+  .app-nav-shell {
+    padding: 12px 12px 0;
+  }
+
+  .app-nav {
+    padding: 10px 12px;
+  }
+
+  .app-nav-brand {
+    font-size: 1.35rem;
+  }
+
+  .app-nav-link {
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 0.8rem;
+  }
+}
