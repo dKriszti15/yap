@@ -8,7 +8,7 @@ export default function HomePage() {
         <p class="home-kicker">Yap</p>
         <h2>HOME PAGE</h2>
         <A class="home-button" href="/auth">
-          Go to auth page
+          Login
         </A>
       </section>
     </main>

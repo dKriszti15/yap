@@ -28,30 +28,6 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  position: relative;
-  overflow: hidden;
-}
-
-.auth-page::before {
-  content: "";
-  position: fixed;
-  top: -160px;
-  right: -160px;
-  width: 480px;
-  height: 480px;
-  background: radial-gradient(circle, rgba(255, 77, 0, 0.13) 0%, transparent 65%);
-  pointer-events: none;
-}
-
-.auth-page::after {
-  content: "";
-  position: fixed;
-  bottom: -120px;
-  left: -100px;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(255, 224, 51, 0.18) 0%, transparent 65%);
-  pointer-events: none;
 }
 
 .card {
