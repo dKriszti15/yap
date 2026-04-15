@@ -6,6 +6,11 @@
   "scripts": {
     "dev:infra": "docker compose up -d",
     "stop:infra": "docker compose down",
+    "wait:infra": "wait-on tcp:5432 tcp:8080",
+    "db:generate": "pnpm --filter @yap/db db:generate",
+    "db:migrate": "pnpm --filter @yap/db db:migrate",
+    "db:studio": "pnpm --filter @yap/db db:studio",
+    "dev:boot": "pnpm dev:infra && pnpm wait:infra && pnpm db:migrate && pnpm dev:all",
     "dev": "pnpm dev:services",
     "dev:services": "pnpm -r --parallel --stream --filter @yap/auth --filter @yap/chat --filter @yap/presence --filter @yap/voice dev",
     "dev:all": "pnpm -r --parallel --stream --filter @yap/auth --filter @yap/chat --filter @yap/presence --filter @yap/voice --filter @yap/frontend dev",
@@ -25,6 +30,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^24.5.2",
+    "wait-on": "^8.0.5",
     "tsx": "^4.20.6",
     "typescript": "^5.9.2"
   },

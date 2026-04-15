@@ -1,14 +1,11 @@
 import { A, useLocation } from "@solidjs/router";
 import "../utils/navBar.css";
-
-type NavItem = {
-	href: string;
-	label: string;
-};
+import { NavItem } from "../types/NavItem";
 
 const navItems: NavItem[] = [
 	{ href: "/", label: "Home" },
 	{ href: "/auth", label: "Auth" },
+	{ href: "/profile", label: "Profile" },
 ];
 
 function isActive(pathname: string, href: string) {

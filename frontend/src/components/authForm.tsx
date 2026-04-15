@@ -1,5 +1,12 @@
 import { Show, createMemo, createSignal } from "solid-js";
+import { useNavigate } from "@solidjs/router";
 import "../utils/authForm.css";
+
+import {
+  clearAuthSession,
+  getAuthApiBaseUrl,
+  saveAuthSession,
+} from "../utils/session";
 
 type Tab = "login" | "register";
 type FieldName =
@@ -32,17 +39,17 @@ const defaultTouched: Touched = {
 };
 
 function usernameError(value: string, touched: boolean): string {
-  const v = value.trim();
-  if (!v) return touched ? "Username is required" : "";
-  if (v.length < 3) return "At least 3 characters";
-  if (!/^[a-zA-Z0-9_]+$/.test(v)) return "Letters, numbers and _ only";
+  const trimmed = value.trim();
+  if (!trimmed) return touched ? "Username is required" : "";
   return "";
 }
 
 function emailError(value: string, touched: boolean): string {
-  const v = value.trim();
-  if (!v) return touched ? "Email is required" : "";
-  return (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) ? "That doesn't look like an email" : "";
+  const trimmed = value.trim();
+  if (!trimmed) return touched ? "Email is required" : "";
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)
+    ? ""
+    : "That doesn't look like an email";
 }
 
 function passwordError(value: string, touched: boolean): string {
@@ -131,7 +138,37 @@ function CelebrationIcon() {
   );
 }
 
+function authErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Authentication failed";
+}
+
+async function postAuth<T>(path: string, body: unknown): Promise<T> {
+  const response = await fetch(`${getAuthApiBaseUrl()}${path}`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  const payload = (await response.json().catch(() => null)) as {
+    ok?: boolean;
+    error?: string;
+  } | null;
+
+  if (!response.ok || payload?.ok === false) {
+    throw new Error(payload?.error ?? `Request failed with status ${response.status}`);
+  }
+
+  return payload as T;
+}
+
 export default function AuthForm() {
+  const navigate = useNavigate();
   const [tab, setTab] = createSignal<Tab>("login");
   const [values, setValues] = createSignal<Values>(defaultValues);
   const [touched, setTouched] = createSignal<Touched>(defaultTouched);
@@ -140,28 +177,30 @@ export default function AuthForm() {
   const [loading, setLoading] = createSignal<Tab | null>(null);
   const [shake, setShake] = createSignal(false);
   const [success, setSuccess] = createSignal<{ title: string; subtitle: string } | null>(null);
+  const [error, setError] = createSignal<string | null>(null);
 
   const errors = createMemo(() => {
-    const v = values();
-    const t = touched();
+    const currentValues = values();
+    const currentTouched = touched();
+
     return {
-      lUsername: usernameError(v.lUsername, t.lUsername),
-      lPassword: !v.lPassword ? (t.lPassword ? "Password is required" : "") : "",
-      rUsername: usernameError(v.rUsername, t.rUsername),
-      rEmail: emailError(v.rEmail, t.rEmail),
-      rPassword: passwordError(v.rPassword, t.rPassword),
-      rConfirm: confirmError(v.rConfirm, v.rPassword, t.rConfirm),
+      lUsername: usernameError(currentValues.lUsername, currentTouched.lUsername),
+      lPassword: passwordError(currentValues.lPassword, currentTouched.lPassword),
+      rUsername: usernameError(currentValues.rUsername, currentTouched.rUsername),
+      rEmail: emailError(currentValues.rEmail, currentTouched.rEmail),
+      rPassword: passwordError(currentValues.rPassword, currentTouched.rPassword),
+      rConfirm: confirmError(currentValues.rConfirm, currentValues.rPassword, currentTouched.rConfirm),
     };
   });
 
   const strength = createMemo(() => getStrength(values().rPassword));
 
   function setField(name: FieldName, value: string) {
-    setValues((prev) => ({ ...prev, [name]: value }));
+    setValues((current) => ({ ...current, [name]: value }));
   }
 
   function blurField(name: FieldName) {
-    setTouched((prev) => ({ ...prev, [name]: true }));
+    setTouched((current) => ({ ...current, [name]: true }));
   }
 
   function triggerShake() {
@@ -170,60 +209,128 @@ export default function AuthForm() {
     setTimeout(() => setShake(false), 450);
   }
 
-  function submitLogin() {
-    setTouched((prev) => ({ ...prev, lUsername: true, lPassword: true }));
-    const e = errors();
-    if (e.lUsername || e.lPassword) {
+  async function submitLogin() {
+    setTouched((current) => ({ ...current, lUsername: true, lPassword: true }));
+    const currentErrors = errors();
+
+    if (currentErrors.lUsername || currentErrors.lPassword) {
       triggerShake();
       return;
     }
 
     setLoading("login");
-    setTimeout(() => {
-      setLoading(null);
-      const username = values().lUsername.trim();
+    setError(null);
+
+    try {
+      const result = await postAuth<{
+        access_token: string;
+        refresh_token?: string;
+        id_token?: string;
+        expires_in: number;
+        refresh_expires_in?: number;
+        token_type: string;
+        scope?: string;
+      }>("/login", {
+        username: values().lUsername.trim(),
+        password: values().lPassword,
+      });
+
+      saveAuthSession(result);
       setSuccess({
         title: "Welcome back!",
-        subtitle: `Good to see you again, @${username}.`,
+        subtitle: `You're signed in as @${values().lUsername.trim()}.`,
       });
-    }, 1200);
+
+      setTimeout(() => {
+        navigate("/profile", { replace: true });
+      }, 700);
+    } catch (authError) {
+      clearAuthSession();
+      setError(authErrorMessage(authError));
+      triggerShake();
+    } finally {
+      setLoading(null);
+    }
   }
 
-  function submitRegister() {
-    setTouched((prev) => ({
-      ...prev,
+  async function submitRegister() {
+    setTouched((current) => ({
+      ...current,
       rUsername: true,
       rEmail: true,
       rPassword: true,
       rConfirm: true,
     }));
-    const e = errors();
-    if (e.rUsername || e.rEmail || e.rPassword || e.rConfirm) {
+
+    const currentErrors = errors();
+    if (currentErrors.rUsername || currentErrors.rEmail || currentErrors.rPassword || currentErrors.rConfirm) {
       triggerShake();
       return;
     }
 
     setLoading("register");
-    setTimeout(() => {
-      setLoading(null);
-      const username = values().rUsername.trim();
-      setSuccess({
-        title: "You're in!",
-        subtitle: `Welcome to Yap, @${username}. Time to make some noise.`,
+    setError(null);
+
+    try {
+      const result = await postAuth<{
+        accountCreated: boolean;
+        message?: string;
+        user?: {
+          username: string;
+          email: string;
+        };
+      }>("/register", {
+        username: values().rUsername.trim(),
+        email: values().rEmail.trim(),
+        password: values().rPassword,
       });
-    }, 1200);
+
+      const registeredUsername = result.user?.username ?? values().rUsername.trim();
+
+      setSuccess({
+        title: "Account created",
+        subtitle: result.message ?? `Now sign in as @${registeredUsername}.`,
+      });
+
+      setValues((current) => ({
+        ...current,
+        lUsername: registeredUsername,
+        lPassword: "",
+        rPassword: "",
+        rConfirm: "",
+      }));
+      setTouched((current) => ({
+        ...current,
+        lUsername: false,
+        lPassword: false,
+      }));
+
+      setTimeout(() => {
+        setSuccess(null);
+        setTab("login");
+      }, 1000);
+    } catch (authError) {
+      clearAuthSession();
+      setError(authErrorMessage(authError));
+      triggerShake();
+    } finally {
+      setLoading(null);
+    }
   }
 
   return (
     <div class="auth-page">
       <div class={`card ${shake() ? "shake" : ""}`}>
-        <Show when={!success()} fallback={
-          <div class="success-state show">
-            <div class="success-circle"><CelebrationIcon /></div>
-            <div class="success-title">{success()?.title}</div>
-            <p class="success-sub">{success()?.subtitle}</p>
-          </div>
-        }>
+        <Show
+          when={!success()}
+          fallback={
+            <div class="success-state show">
+              <div class="success-circle"><CelebrationIcon /></div>
+              <div class="success-title">{success()?.title}</div>
+              <p class="success-sub">{success()?.subtitle}</p>
+            </div>
+          }
+        >
           <div>
             <div class="logo">
               yap <span class="logo-dot" />
@@ -233,122 +340,133 @@ export default function AuthForm() {
               <button
                 class={`tab ${tab() === "login" ? "active" : ""}`}
                 type="button"
-                onClick={() => setTab("login")}
+                onClick={() => {
+                  setTab("login");
+                  setError(null);
+                }}
               >
                 Sign in
               </button>
               <button
                 class={`tab ${tab() === "register" ? "active" : ""}`}
                 type="button"
-                onClick={() => setTab("register")}
+                onClick={() => {
+                  setTab("register");
+                  setError(null);
+                }}
               >
                 Create account
               </button>
             </div>
 
-            <Show when={tab() === "login"} fallback={
-              <div>
-                <div class="field" style={{ "animation-delay": "0.05s" }}>
-                  <label for="r-username">Username</label>
-                  <div class="input-wrap">
-                    <input
-                      id="r-username"
-                      type="text"
-                      placeholder="pick something fun"
-                      value={values().rUsername}
-                      class={inputClass(errors().rUsername, values().rUsername)}
-                      onInput={(e) => setField("rUsername", e.currentTarget.value)}
-                      onBlur={() => blurField("rUsername")}
-                    />
-                    <span class="input-icon ok"><CheckIcon /></span>
-                    <span class="input-icon err"><ErrorIcon /></span>
-                  </div>
-                  <div class={`field-error ${errors().rUsername ? "show" : ""}`}>{errors().rUsername}</div>
-                </div>
-
-                <div class="field" style={{ "animation-delay": "0.1s" }}>
-                  <label for="r-email">Email</label>
-                  <div class="input-wrap">
-                    <input
-                      id="r-email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={values().rEmail}
-                      class={inputClass(errors().rEmail, values().rEmail)}
-                      onInput={(e) => setField("rEmail", e.currentTarget.value)}
-                      onBlur={() => blurField("rEmail")}
-                    />
-                    <span class="input-icon ok"><CheckIcon /></span>
-                    <span class="input-icon err"><ErrorIcon /></span>
-                  </div>
-                  <div class={`field-error ${errors().rEmail ? "show" : ""}`}>{errors().rEmail}</div>
-                </div>
-
-                <div class="field" style={{ "animation-delay": "0.15s" }}>
-                  <label for="r-password">Password</label>
-                  <div class="input-wrap">
-                    <input
-                      id="r-password"
-                      type={showRegisterPassword() ? "text" : "password"}
-                      placeholder="make it spicy"
-                      value={values().rPassword}
-                      class={inputClass(errors().rPassword, values().rPassword)}
-                      onInput={(e) => setField("rPassword", e.currentTarget.value)}
-                      onBlur={() => blurField("rPassword")}
-                    />
-                    <button
-                      class="pw-toggle"
-                      type="button"
-                      onClick={() => setShowRegisterPassword((prev) => !prev)}
-                      tabindex="-1"
-                      aria-label={showRegisterPassword() ? "Hide password" : "Show password"}
-                    >
-                      {showRegisterPassword() ? <EyeOffIcon /> : <EyeIcon />}
-                    </button>
-                  </div>
-                  <div class={`field-error ${errors().rPassword ? "show" : ""}`}>{errors().rPassword}</div>
-
-                  <div class={`strength-wrap ${values().rPassword ? "show" : ""}`}>
-                    <div class="strength-bars">
-                      <div class="strength-bar" style={{ background: strength().score >= 1 ? strength().color : "var(--border)" }} />
-                      <div class="strength-bar" style={{ background: strength().score >= 2 ? strength().color : "var(--border)" }} />
-                      <div class="strength-bar" style={{ background: strength().score >= 3 ? strength().color : "var(--border)" }} />
-                      <div class="strength-bar" style={{ background: strength().score >= 4 ? strength().color : "var(--border)" }} />
+            <Show
+              when={tab() === "login"}
+              fallback={
+                <div>
+                  <div class="field" style={{ "animation-delay": "0.05s" }}>
+                    <label for="r-username">Username</label>
+                    <div class="input-wrap">
+                      <input
+                        id="r-username"
+                        type="text"
+                        placeholder="pick something fun"
+                        value={values().rUsername}
+                        class={inputClass(errors().rUsername, values().rUsername)}
+                        onInput={(event) => setField("rUsername", event.currentTarget.value)}
+                        onBlur={() => blurField("rUsername")}
+                      />
+                      <span class="input-icon ok"><CheckIcon /></span>
+                      <span class="input-icon err"><ErrorIcon /></span>
                     </div>
-                    <div class="strength-label" style={{ color: strength().color }}>{strength().label}</div>
+                    <div class={`field-error ${errors().rUsername ? "show" : ""}`}>{errors().rUsername}</div>
                   </div>
-                </div>
 
-                <div class="field" style={{ "animation-delay": "0.2s" }}>
-                  <label for="r-confirm">Confirm Password</label>
-                  <div class="input-wrap">
-                    <input
-                      id="r-confirm"
-                      type="password"
-                      placeholder="same thing again"
-                      value={values().rConfirm}
-                      class={inputClass(errors().rConfirm, values().rConfirm)}
-                      onInput={(e) => setField("rConfirm", e.currentTarget.value)}
-                      onBlur={() => blurField("rConfirm")}
-                    />
-                    <span class="input-icon ok"><CheckIcon /></span>
-                    <span class="input-icon err"><ErrorIcon /></span>
+                  <div class="field" style={{ "animation-delay": "0.1s" }}>
+                    <label for="r-email">Email</label>
+                    <div class="input-wrap">
+                      <input
+                        id="r-email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={values().rEmail}
+                        class={inputClass(errors().rEmail, values().rEmail)}
+                        onInput={(event) => setField("rEmail", event.currentTarget.value)}
+                        onBlur={() => blurField("rEmail")}
+                      />
+                      <span class="input-icon ok"><CheckIcon /></span>
+                      <span class="input-icon err"><ErrorIcon /></span>
+                    </div>
+                    <div class={`field-error ${errors().rEmail ? "show" : ""}`}>{errors().rEmail}</div>
                   </div>
-                  <div class={`field-error ${errors().rConfirm ? "show" : ""}`}>{errors().rConfirm}</div>
-                </div>
 
-                <button
-                  class={`btn ${loading() === "register" ? "loading" : ""}`}
-                  type="button"
-                  onClick={submitRegister}
-                >
-                  <span class="btn-text">Start yapping →</span>
-                  <span class="btn-spinner">
-                    <span class="spinner-ring" />
-                  </span>
-                </button>
-              </div>
-            }>
+                  <div class="field" style={{ "animation-delay": "0.15s" }}>
+                    <label for="r-password">Password</label>
+                    <div class="input-wrap">
+                      <input
+                        id="r-password"
+                        type={showRegisterPassword() ? "text" : "password"}
+                        placeholder="make it spicy"
+                        value={values().rPassword}
+                        class={inputClass(errors().rPassword, values().rPassword)}
+                        onInput={(event) => setField("rPassword", event.currentTarget.value)}
+                        onBlur={() => blurField("rPassword")}
+                      />
+                      <button
+                        class="pw-toggle"
+                        type="button"
+                        onClick={() => setShowRegisterPassword((current) => !current)}
+                        tabindex="-1"
+                        aria-label={showRegisterPassword() ? "Hide password" : "Show password"}
+                      >
+                        {showRegisterPassword() ? <EyeOffIcon /> : <EyeIcon />}
+                      </button>
+                    </div>
+                    <div class={`field-error ${errors().rPassword ? "show" : ""}`}>{errors().rPassword}</div>
+
+                    <div class={`strength-wrap ${values().rPassword ? "show" : ""}`}>
+                      <div class="strength-bars">
+                        <div class="strength-bar" style={{ background: strength().score >= 1 ? strength().color : "var(--border)" }} />
+                        <div class="strength-bar" style={{ background: strength().score >= 2 ? strength().color : "var(--border)" }} />
+                        <div class="strength-bar" style={{ background: strength().score >= 3 ? strength().color : "var(--border)" }} />
+                        <div class="strength-bar" style={{ background: strength().score >= 4 ? strength().color : "var(--border)" }} />
+                      </div>
+                      <div class="strength-label" style={{ color: strength().color }}>{strength().label}</div>
+                    </div>
+                  </div>
+
+                  <div class="field" style={{ "animation-delay": "0.2s" }}>
+                    <label for="r-confirm">Confirm Password</label>
+                    <div class="input-wrap">
+                      <input
+                        id="r-confirm"
+                        type="password"
+                        placeholder="same thing again"
+                        value={values().rConfirm}
+                        class={inputClass(errors().rConfirm, values().rConfirm)}
+                        onInput={(event) => setField("rConfirm", event.currentTarget.value)}
+                        onBlur={() => blurField("rConfirm")}
+                      />
+                      <span class="input-icon ok"><CheckIcon /></span>
+                      <span class="input-icon err"><ErrorIcon /></span>
+                    </div>
+                    <div class={`field-error ${errors().rConfirm ? "show" : ""}`}>{errors().rConfirm}</div>
+                  </div>
+
+                  {error() ? <div class="field-error show">{error()}</div> : null}
+
+                  <button
+                    class={`btn ${loading() === "register" ? "loading" : ""}`}
+                    type="button"
+                    onClick={submitRegister}
+                  >
+                    <span class="btn-text">Start yapping →</span>
+                    <span class="btn-spinner">
+                      <span class="spinner-ring" />
+                    </span>
+                  </button>
+                </div>
+              }
+            >
               <div>
                 <div class="field" style={{ "animation-delay": "0.05s" }}>
                   <label for="l-username">Username</label>
@@ -359,7 +477,7 @@ export default function AuthForm() {
                       placeholder="your username"
                       value={values().lUsername}
                       class={inputClass(errors().lUsername, values().lUsername)}
-                      onInput={(e) => setField("lUsername", e.currentTarget.value)}
+                      onInput={(event) => setField("lUsername", event.currentTarget.value)}
                       onBlur={() => blurField("lUsername")}
                     />
                     <span class="input-icon ok"><CheckIcon /></span>
@@ -377,16 +495,18 @@ export default function AuthForm() {
                       placeholder="your password"
                       value={values().lPassword}
                       class={inputClass(errors().lPassword, values().lPassword)}
-                      onInput={(e) => setField("lPassword", e.currentTarget.value)}
+                      onInput={(event) => setField("lPassword", event.currentTarget.value)}
                       onBlur={() => blurField("lPassword")}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") submitLogin();
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          void submitLogin();
+                        }
                       }}
                     />
                     <button
                       class="pw-toggle"
                       type="button"
-                      onClick={() => setShowLoginPassword((prev) => !prev)}
+                      onClick={() => setShowLoginPassword((current) => !current)}
                       tabindex="-1"
                       aria-label={showLoginPassword() ? "Hide password" : "Show password"}
                     >
@@ -395,6 +515,8 @@ export default function AuthForm() {
                   </div>
                   <div class={`field-error ${errors().lPassword ? "show" : ""}`}>{errors().lPassword}</div>
                 </div>
+
+                {error() ? <div class="field-error show">{error()}</div> : null}
 
                 <button
                   class={`btn ${loading() === "login" ? "loading" : ""}`}
@@ -417,8 +539,8 @@ export default function AuthForm() {
                     Already have an account?{" "}
                     <a
                       href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
+                      onClick={(event) => {
+                        event.preventDefault();
                         setTab("login");
                       }}
                     >
@@ -427,18 +549,16 @@ export default function AuthForm() {
                   </>
                 }
               >
-                <>
-                  Don't have an account?{" "}
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setTab("register");
-                    }}
-                  >
-                    Join Yap
-                  </a>
-                </>
+                New here?{" "}
+                <a
+                  href="#"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    setTab("register");
+                  }}
+                >
+                  Create account
+                </a>
               </Show>
             </p>
           </div>
