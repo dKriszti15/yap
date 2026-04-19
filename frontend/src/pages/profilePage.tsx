@@ -36,7 +36,14 @@ async function fetchMe() {
   const payload = (await response.json().catch(() => null)) as MeResponse | null;
 
   if (!response.ok || !payload || payload.ok === false) {
-    throw new Error(payload?.ok === false ? payload.error : "Failed to load profile");
+    const errorMessage = payload?.ok === false ? payload.error : "Failed to load profile";
+
+    if (response.status === 401) {
+      clearAuthSession();
+      return null;
+    }
+
+    throw new Error(errorMessage);
   }
 
   return payload.user;
