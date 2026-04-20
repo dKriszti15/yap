@@ -30,14 +30,35 @@ const jwks = createRemoteJWKSet(
   new URL(`${keycloakIssuer}/protocol/openid-connect/certs`),
 );
 
+class TokenValidationError extends Error {}
+
+function hasExpectedAudience(audClaim: unknown, expectedAudience: string): boolean {
+  if (typeof audClaim === "string") {
+    return audClaim === expectedAudience;
+  }
+
+  if (Array.isArray(audClaim)) {
+    return audClaim.includes(expectedAudience);
+  }
+
+  return false;
+}
+
 async function verifyKeycloakToken(token: string): Promise<KeycloakClaims> {
   const { payload } = await jwtVerify(token, jwks, {
     issuer: keycloakIssuer,
-    audience: keycloakAudience,
   });
 
+  const audienceMatches = hasExpectedAudience(payload.aud, keycloakAudience);
+  const authorizedParty =
+    typeof payload.azp === "string" ? payload.azp : undefined;
+
+  if (!audienceMatches && authorizedParty !== keycloakAudience) {
+    throw new TokenValidationError("Token audience does not match configured client");
+  }
+
   if (!payload.sub || typeof payload.sub !== "string") {
-    throw new Error("Token is missing sub claim");
+    throw new TokenValidationError("Token is missing sub claim");
   }
 
   return {
@@ -152,7 +173,7 @@ app.get("/me", async (request, reply) => {
       user,
     };
   } catch (error) {
-    if (error instanceof errors.JOSEError) {
+    if (error instanceof errors.JOSEError || error instanceof TokenValidationError) {
       return reply.code(401).send({
         ok: false,
         error: "Invalid or expired token",

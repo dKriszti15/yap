@@ -3,7 +3,7 @@ import { useNavigate } from "@solidjs/router";
 import "../utils/authForm.css";
 
 import {
-  clearAuthSession,
+  clearAuthState,
   getAuthApiBaseUrl,
   saveAuthSession,
 } from "../utils/session";
@@ -245,7 +245,7 @@ export default function AuthForm() {
         navigate("/profile", { replace: true });
       }, 700);
     } catch (authError) {
-      clearAuthSession();
+      clearAuthState();
       setError(authErrorMessage(authError));
       triggerShake();
     } finally {
@@ -310,7 +310,7 @@ export default function AuthForm() {
         setTab("login");
       }, 1000);
     } catch (authError) {
-      clearAuthSession();
+      clearAuthState();
       setError(authErrorMessage(authError));
       triggerShake();
     } finally {
