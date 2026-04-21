@@ -3,30 +3,13 @@ import { useNavigate } from "@solidjs/router";
 
 import {
   clearAuthState,
-  CurrentUser,
   getAuthApiBaseUrl,
   loadAuthSession,
   loadCurrentUser,
   saveCurrentUser,
 } from "../utils/session";
-
-type MeResponse =
-  | {
-      ok: true;
-      user: {
-        id: string;
-        sub: string;
-        username: string;
-        email: string;
-        avatarUrl: string | null;
-        createdAt: string;
-        updatedAt: string;
-      };
-    }
-  | {
-      ok: false;
-      error: string;
-    };
+import type { MeResponse } from "../types/profile";
+import type { CurrentUser } from "../types/session";
 
 async function fetchMe(): Promise<CurrentUser | null> {
   const session = loadAuthSession();

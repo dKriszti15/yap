@@ -4,8 +4,9 @@ import AuthPage from "./pages/authPage.jsx";
 import HomePage from "./pages/homePage.jsx";
 import NavBar from "./components/navBar.jsx";
 import ProfilePage from "./pages/profilePage.jsx";
+import type { AppLayoutProps } from "./types/app";
 
-function AppLayout(props: { children?: unknown }) {
+function AppLayout(props: AppLayoutProps) {
   return (
     <>
       <NavBar />

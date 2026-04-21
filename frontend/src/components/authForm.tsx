@@ -7,18 +7,8 @@ import {
   getAuthApiBaseUrl,
   saveAuthSession,
 } from "../utils/session";
-
-type Tab = "login" | "register";
-type FieldName =
-  | "lUsername"
-  | "lPassword"
-  | "rUsername"
-  | "rEmail"
-  | "rPassword"
-  | "rConfirm";
-
-type Values = Record<FieldName, string>;
-type Touched = Record<FieldName, boolean>;
+import type { LoginResponse, RegisterResponse } from "../types/authApi";
+import type { FieldName, Tab, Touched, Values } from "../types/authForm";
 
 const defaultValues: Values = {
   lUsername: "",
@@ -222,15 +212,7 @@ export default function AuthForm() {
     setError(null);
 
     try {
-      const result = await postAuth<{
-        access_token: string;
-        refresh_token?: string;
-        id_token?: string;
-        expires_in: number;
-        refresh_expires_in?: number;
-        token_type: string;
-        scope?: string;
-      }>("/login", {
+      const result = await postAuth<LoginResponse>("/login", {
         username: values().lUsername.trim(),
         password: values().lPassword,
       });
@@ -272,14 +254,7 @@ export default function AuthForm() {
     setError(null);
 
     try {
-      const result = await postAuth<{
-        accountCreated: boolean;
-        message?: string;
-        user?: {
-          username: string;
-          email: string;
-        };
-      }>("/register", {
+      const result = await postAuth<RegisterResponse>("/register", {
         username: values().rUsername.trim(),
         email: values().rEmail.trim(),
         password: values().rPassword,
