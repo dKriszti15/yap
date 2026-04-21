@@ -1,12 +1,7 @@
 import { A, useLocation } from "@solidjs/router";
+import { createMemo } from "solid-js";
 import "../utils/navBar.css";
-import { NavItem } from "../types/NavItem";
-
-const navItems: NavItem[] = [
-	{ href: "/", label: "Home" },
-	{ href: "/auth", label: "Auth" },
-	{ href: "/profile", label: "Profile" },
-];
+import { loadAuthSession } from "../utils/session";
 
 function isActive(pathname: string, href: string) {
 	if (href === "/") return pathname === "/";
@@ -15,6 +10,10 @@ function isActive(pathname: string, href: string) {
 
 export default function NavBar() {
 	const location = useLocation();
+	const showAuth = createMemo(() => {
+		location.pathname;
+		return !loadAuthSession();
+	});
 
 	return (
 		<header class="app-nav-shell">
@@ -24,14 +23,29 @@ export default function NavBar() {
 				</A>
 
 				<div class="app-nav-links">
-					{navItems.map((item) => (
+					<A
+						href="/"
+						end
+						class={`app-nav-link ${isActive(location.pathname, "/") ? "active" : ""}`}
+					>
+						Home
+					</A>
+					{showAuth() ? (
 						<A
-							href={item.href}
-							class={`app-nav-link ${isActive(location.pathname, item.href) ? "active" : ""}`}
+							href="/auth"
+							class={`app-nav-link ${isActive(location.pathname, "/auth") ? "active" : ""}`}
 						>
-							{item.label}
+							Auth
 						</A>
-					))}
+					) : null}
+
+					<A
+						href="/profile"
+						class={`app-nav-link ${isActive(location.pathname, "/profile") ? "active" : ""}`}
+					>
+						Profile
+					</A>
+					
 				</div>
 			</nav>
 		</header>
