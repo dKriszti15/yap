@@ -12,7 +12,7 @@ export default function HomePage() {
         <p class="home-kicker">Yap</p>
         <h2>HOME PAGE</h2>
         {
-          !isAuthenticated && (
+          !isAuthenticated() && (
             <A class="home-button" href="/auth">
               Login
             </A>
