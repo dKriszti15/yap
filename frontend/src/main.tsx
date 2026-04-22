@@ -1,9 +1,9 @@
 import { render } from "solid-js/web";
 import { Route, Router } from "@solidjs/router";
-import AuthPage from "./pages/authPage.jsx";
-import HomePage from "./pages/homePage.jsx";
-import NavBar from "./components/navBar.jsx";
-import ProfilePage from "./pages/profilePage.jsx";
+import AuthPage from "./pages/authPage";
+import HomePage from "./pages/homePage";
+import NavBar from "./components/navBar";
+import ProfilePage from "./pages/profilePage";
 import type { AppLayoutProps } from "./types/app";
 
 function AppLayout(props: AppLayoutProps) {

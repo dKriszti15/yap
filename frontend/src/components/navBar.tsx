@@ -26,14 +26,14 @@ export default function NavBar() {
 					>
 						Home
 					</A>
-					{!isAuthenticated() ? (
+					{!isAuthenticated() && (
 						<A
 							href="/auth"
 							class={`app-nav-link ${isActive(location.pathname, "/auth") ? "active" : ""}`}
 						>
 							Auth
 						</A>
-					) : null}
+					)}
 
 					<A
 						href="/profile"
