@@ -3,6 +3,13 @@ import type { AuthSession, CurrentUser, StoredAuthSession } from "../types/sessi
 const STORAGE_KEY = "yap.auth.session";
 const USER_STORAGE_KEY = "yap.auth.user";
 const EXPIRY_SKEW_SECONDS = 30;
+const AUTH_STATE_EVENT = "yap.auth.state.changed";
+
+function notifyAuthStateChanged() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(AUTH_STATE_EVENT));
+  }
+}
 
 export function getAuthApiBaseUrl(): string {
   return import.meta.env.VITE_AUTH_URL ?? "http://localhost:4001";
@@ -15,6 +22,7 @@ export function saveAuthSession(session: AuthSession) {
   };
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+  notifyAuthStateChanged();
 }
 
 export function loadAuthSession(): AuthSession | null {
@@ -58,6 +66,7 @@ export function loadAuthSession(): AuthSession | null {
 
 export function clearAuthSession() {
   localStorage.removeItem(STORAGE_KEY);
+  notifyAuthStateChanged();
 }
 
 export function saveCurrentUser(user: CurrentUser) {
@@ -99,6 +108,26 @@ export function loadCurrentUser(): CurrentUser | null {
 
 export function clearCurrentUser() {
   localStorage.removeItem(USER_STORAGE_KEY);
+}
+
+export function onAuthStateChange(callback: () => void): () => void {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === STORAGE_KEY) {
+      callback();
+    }
+  };
+
+  window.addEventListener(AUTH_STATE_EVENT, callback);
+  window.addEventListener("storage", onStorage);
+
+  return () => {
+    window.removeEventListener(AUTH_STATE_EVENT, callback);
+    window.removeEventListener("storage", onStorage);
+  };
 }
 
 export function clearAuthState() {

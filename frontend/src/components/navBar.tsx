@@ -1,7 +1,6 @@
 import { A, useLocation } from "@solidjs/router";
-import { createMemo } from "solid-js";
 import "../utils/navBar.css";
-import { loadAuthSession } from "../utils/session";
+import { useIsAuthenticated } from "../utils/useAuth";
 
 function isActive(pathname: string, href: string) {
 	if (href === "/") return pathname === "/";
@@ -10,10 +9,7 @@ function isActive(pathname: string, href: string) {
 
 export default function NavBar() {
 	const location = useLocation();
-	const showAuth = createMemo(() => {
-		location.pathname;
-		return !loadAuthSession();
-	});
+	const isAuthenticated = useIsAuthenticated();
 
 	return (
 		<header class="app-nav-shell">
@@ -30,7 +26,7 @@ export default function NavBar() {
 					>
 						Home
 					</A>
-					{showAuth() ? (
+					{!isAuthenticated() ? (
 						<A
 							href="/auth"
 							class={`app-nav-link ${isActive(location.pathname, "/auth") ? "active" : ""}`}
