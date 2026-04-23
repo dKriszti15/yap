@@ -8,6 +8,13 @@
       "when": 1776257612585,
       "tag": "0000_icy_onslaught",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1776957321400,
+      "tag": "0001_swift_greymalkin",
+      "breakpoints": true
     }
   ]
 }
