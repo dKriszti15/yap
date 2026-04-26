@@ -35,12 +35,16 @@ export default function NavBar() {
 						</A>
 					)}
 
-					<A
-						href="/social"
-						class={`app-nav-link ${isActive(location.pathname, "/social") ? "active" : ""}`}
-					>
-						Social
-					</A>
+					{
+						isAuthenticated() && (
+							<A
+								href="/social"
+								class={`app-nav-link ${isActive(location.pathname, "/social") ? "active" : ""}`}
+							>
+								Social
+							</A>
+						)
+					}
 
 					<A
 						href="/profile"
