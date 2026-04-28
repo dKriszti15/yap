@@ -87,9 +87,91 @@
   padding: 16px;
 }
 
+.social-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
 .social-card h3 {
-  margin: 0 0 12px;
+  margin: 0;
   font-size: 1.02rem;
+}
+
+.social-action-form {
+  margin: 12px 0 14px;
+  display: grid;
+  gap: 8px;
+  width: min(100%, 280px);
+}
+
+.social-form-title {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #6f5d4a;
+}
+
+.social-form-input {
+  width: 100%;
+  max-width: 260px;
+  border: 1px solid #eccfb9;
+  border-radius: 12px;
+  min-height: 38px;
+  padding: 0 12px;
+  font-size: 0.94rem;
+  background: #fff;
+  color: #160e00;
+}
+
+.social-form-input:focus {
+  outline: 2px solid #ffd7c1;
+  border-color: #ff995f;
+}
+
+.social-card-action {
+  border: 1px solid #ffb48f;
+  background: #fff2e9;
+  color: #c43d00;
+  border-radius: 999px;
+  min-height: 30px;
+  padding: 0 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.social-card-action:hover {
+  background: #ffe4d2;
+}
+
+.social-card-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.social-form-help {
+  margin: 0;
+  color: #9c8c78;
+  font-size: 0.82rem;
+}
+
+.social-form-success,
+.social-form-error {
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.social-form-success {
+  color: #236444;
+}
+
+.social-form-error {
+  color: #ab2f1f;
 }
 
 .social-list {

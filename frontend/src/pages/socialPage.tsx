@@ -1,7 +1,8 @@
-import { For, Show, createResource } from "solid-js";
+import { For, Show, createResource, createSignal } from "solid-js";
 import { A } from "@solidjs/router";
 
 import "../utils/socialPage.css";
+import SocialActionForm from "../components/socialActionForm";
 import {
     clearAuthState,
     getAuthApiBaseUrl,
@@ -118,7 +119,101 @@ async function fetchSocialPanel(): Promise<SocialState> {
 }
 
 export default function SocialPage() {
-    const [social] = createResource(fetchSocialPanel);
+    const [social, { mutate }] = createResource(fetchSocialPanel);
+    const [friendFeedback, setFriendFeedback] = createSignal<string | null>(null);
+    const [friendError, setFriendError] = createSignal<string | null>(null);
+    const [groupFeedback, setGroupFeedback] = createSignal<string | null>(null);
+    const [groupError, setGroupError] = createSignal<string | null>(null);
+
+    const getAuthHeaders = () => {
+        const session = loadAuthSession();
+        if (!session?.access_token) {
+            throw new Error("Sign in first");
+        }
+
+        return {
+            "content-type": "application/json",
+            authorization: `Bearer ${session.access_token}`,
+        };
+    };
+
+    const addFriend = async (username: string) => {
+        setFriendError(null);
+        setFriendFeedback(null);
+
+        try {
+            const response = await fetch(`${getAuthApiBaseUrl()}/social/friends`, {
+                method: "POST",
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ username }),
+            });
+
+            const payload = (await response.json().catch(() => null)) as
+                | { ok?: boolean; error?: string; friend?: Friend }
+                | null;
+
+            if (!response.ok || !payload || payload.ok === false || !payload.friend) {
+                throw new Error(payload?.error ?? "Failed to add friend");
+            }
+
+            const friend = payload.friend;
+
+            mutate((current) => {
+                if (!current) {
+                    return current;
+                }
+
+                const alreadyExists = current.friends.some((item) => item.id === friend.id);
+                return {
+                    ...current,
+                    friends: alreadyExists ? current.friends : [...current.friends, friend],
+                };
+            });
+
+            setFriendFeedback(`Added @${friend.username}`);
+        } catch (error) {
+            setFriendError(error instanceof Error ? error.message : "Failed to add friend");
+        }
+    };
+
+    const joinGroup = async (name: string) => {
+        setGroupError(null);
+        setGroupFeedback(null);
+
+        try {
+            const response = await fetch(`${getAuthApiBaseUrl()}/social/groups/join`, {
+                method: "POST",
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ name }),
+            });
+
+            const payload = (await response.json().catch(() => null)) as
+                | { ok?: boolean; error?: string; group?: Group }
+                | null;
+
+            if (!response.ok || !payload || payload.ok === false || !payload.group) {
+                throw new Error(payload?.error ?? "Failed to join group");
+            }
+
+            const group = payload.group;
+
+            mutate((current) => {
+                if (!current) {
+                    return current;
+                }
+
+                const alreadyJoined = current.groups.some((item) => item.id === group.id);
+                return {
+                    ...current,
+                    groups: alreadyJoined ? current.groups : [...current.groups, group],
+                };
+            });
+
+            setGroupFeedback(`Joined ${group.name}`);
+        } catch (error) {
+            setGroupError(error instanceof Error ? error.message : "Failed to join group");
+        }
+    };
 
     return (
         <main class="home-page">
@@ -142,6 +237,15 @@ export default function SocialPage() {
                         <div class="social-grid">
                             <article class="social-card">
                                 <h3>Friendlist</h3>
+                                <SocialActionForm
+                                    title="Add a friend"
+                                    placeholder="friend_username"
+                                    buttonLabel="Add friend"
+                                    helpText="Send a direct add by username."
+                                    successText={friendFeedback()}
+                                    errorText={friendError()}
+                                    onSubmit={addFriend}
+                                />
                                 <Show when={(social()?.friends.length ?? 0) > 0} fallback={<p class="social-empty">No friends yet.</p>}>
                                     <ul class="social-list">
                                         <For each={social()?.friends}>
@@ -163,6 +267,15 @@ export default function SocialPage() {
 
                             <article class="social-card">
                                 <h3>Groups</h3>
+                                <SocialActionForm
+                                    title="Join a group"
+                                    placeholder="group_name"
+                                    buttonLabel="Join group"
+                                    helpText="Join an existing group by name, or create it if missing."
+                                    successText={groupFeedback()}
+                                    errorText={groupError()}
+                                    onSubmit={joinGroup}
+                                />
                                 <Show when={(social()?.groups.length ?? 0) > 0} fallback={<p class="social-empty">No groups joined yet.</p>}>
                                     <ul class="social-list">
                                         <For each={social()?.groups}>
