@@ -1,6 +1,8 @@
 import { A, useLocation } from "@solidjs/router";
+import { createEffect, createSignal } from "solid-js";
 import "../utils/navBar.css";
 import { useIsAuthenticated } from "../utils/useAuth";
+import { applyTheme, loadTheme, saveTheme, toggleTheme, type ThemeName } from "../utils/theme";
 
 function isActive(pathname: string, href: string) {
 	if (href === "/") return pathname === "/";
@@ -10,6 +12,17 @@ function isActive(pathname: string, href: string) {
 export default function NavBar() {
 	const location = useLocation();
 	const isAuthenticated = useIsAuthenticated();
+	const [theme, setTheme] = createSignal<ThemeName>(loadTheme());
+
+	createEffect(() => {
+		const currentTheme = theme();
+		applyTheme(currentTheme);
+		saveTheme(currentTheme);
+	});
+
+	const cycleTheme = () => {
+		setTheme((currentTheme) => toggleTheme(currentTheme));
+	};
 
 	return (
 		<header class="app-nav-shell">
@@ -18,7 +31,8 @@ export default function NavBar() {
 					yap <span class="app-nav-dot" aria-hidden="true" />
 				</A>
 
-				<div class="app-nav-links">
+				<div class="app-nav-actions">
+					<div class="app-nav-links">
 					<A
 						href="/"
 						end
@@ -52,7 +66,18 @@ export default function NavBar() {
 					>
 						Profile
 					</A>
-					
+					</div>
+
+					<button
+						type="button"
+						class="app-theme-toggle"
+						onClick={cycleTheme}
+						aria-label={`Switch to ${theme() === "dark" ? "light" : "dark"} theme`}
+					>
+						<span class="app-theme-toggle-state" aria-hidden="true">
+							{theme() === "dark" ? "☀" : "☾"}
+						</span>
+					</button>
 				</div>
 			</nav>
 		</header>

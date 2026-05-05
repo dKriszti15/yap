@@ -2,25 +2,25 @@
   min-height: 100vh;
   padding: 20px 24px 40px;
   background:
-    radial-gradient(circle at 12% 6%, rgba(255, 122, 56, 0.18), transparent 36%),
-    radial-gradient(circle at 88% 12%, rgba(254, 219, 184, 0.65), transparent 32%),
-    #fff8f0;
-  color: #160e00;
+    radial-gradient(circle at 12% 6%, rgba(255, 106, 0, 0.18), transparent 34%),
+    radial-gradient(circle at 88% 12%, rgba(255, 138, 31, 0.09), transparent 28%),
+    transparent;
+  color: var(--text);
 }
 
 .social-shell {
   width: min(100%, 980px);
   margin: 0 auto;
-  border: 2px solid #ecddd0;
+  border: 1px solid var(--border);
   border-radius: 28px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 18px 50px rgba(255, 77, 0, 0.08);
+  background: var(--surface);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(255, 106, 0, 0.04) inset;
   padding: 34px;
 }
 
 .social-kicker {
   margin: 0;
-  color: #ff4d00;
+  color: var(--accent);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -51,7 +51,7 @@
 
 .social-note {
   margin: 6px 0 0;
-  color: #9c8c78;
+  color: var(--muted);
 }
 
 .social-metrics {
@@ -67,9 +67,9 @@
   min-height: 32px;
   padding: 0 12px;
   border-radius: 999px;
-  background: #fdf5ee;
-  border: 1px solid #ecddd0;
-  color: #7a6a57;
+  background: var(--surface-contrast);
+  border: 1px solid var(--border);
+  color: var(--text);
   font-weight: 600;
   font-size: 0.86rem;
 }
@@ -81,8 +81,8 @@
 }
 
 .social-card {
-  border: 1.5px solid #ecddd0;
-  background: #fffdfb;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
   border-radius: 18px;
   padding: 16px;
 }
@@ -112,30 +112,30 @@
   margin-bottom: 6px;
   font-size: 0.84rem;
   font-weight: 700;
-  color: #6f5d4a;
+  color: var(--muted);
 }
 
 .social-form-input {
   width: 100%;
   max-width: 260px;
-  border: 1px solid #eccfb9;
+  border: 1px solid var(--border);
   border-radius: 12px;
   min-height: 38px;
   padding: 0 12px;
   font-size: 0.94rem;
-  background: #fff;
-  color: #160e00;
+  background: var(--input-bg);
+  color: var(--text);
 }
 
 .social-form-input:focus {
-  outline: 2px solid #ffd7c1;
-  border-color: #ff995f;
+  outline: 2px solid var(--accent-glow);
+  border-color: var(--accent);
 }
 
 .social-card-action {
-  border: 1px solid #ffb48f;
-  background: #fff2e9;
-  color: #c43d00;
+  border: 1px solid rgba(255, 106, 0, 0.35);
+  background: var(--accent);
+  color: #120a00;
   border-radius: 999px;
   min-height: 30px;
   padding: 0 12px;
@@ -145,7 +145,7 @@
 }
 
 .social-card-action:hover {
-  background: #ffe4d2;
+  background: var(--accent-strong);
 }
 
 .social-card-action:disabled {
@@ -155,7 +155,7 @@
 
 .social-form-help {
   margin: 0;
-  color: #9c8c78;
+  color: var(--muted);
   font-size: 0.82rem;
 }
 
@@ -167,11 +167,11 @@
 }
 
 .social-form-success {
-  color: #236444;
+  color: var(--success);
 }
 
 .social-form-error {
-  color: #ab2f1f;
+  color: var(--error);
 }
 
 .social-list {
@@ -187,9 +187,9 @@
   align-items: center;
   gap: 10px;
   padding: 10px;
-  border: 1px solid #f0e6dc;
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .group-row {
@@ -203,8 +203,8 @@
   display: grid;
   place-items: center;
   font-weight: 800;
-  color: #fff;
-  background: linear-gradient(135deg, #ff4d00 10%, #ff8d56 100%);
+  color: #120a00;
+  background: linear-gradient(135deg, var(--accent) 10%, var(--accent-strong) 100%);
 }
 
 .social-name {
@@ -214,7 +214,7 @@
 
 .social-sub {
   margin: 2px 0 0;
-  color: #8f7f6c;
+  color: var(--muted);
   font-size: 0.9rem;
 }
 
@@ -226,21 +226,21 @@
   padding: 0 10px;
   font-size: 0.8rem;
   font-weight: 700;
-  color: #7a6a57;
-  background: #fdf5ee;
-  border: 1px solid #ecddd0;
+  color: var(--text);
+  background: var(--surface-contrast);
+  border: 1px solid var(--border);
 }
 
 .social-empty {
   margin: 0;
-  color: #9c8c78;
+  color: var(--muted);
 }
 
 .social-message {
-  border: 1.5px dashed #ecddd0;
+  border: 1px dashed var(--border);
   border-radius: 14px;
   padding: 16px;
-  background: #fffdfb;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .social-message p {
@@ -251,8 +251,8 @@
   display: inline-flex;
   margin-top: 12px;
   text-decoration: none;
-  color: #fff;
-  background: #ff4d00;
+  color: #120a00;
+  background: var(--accent);
   border-radius: 999px;
   min-height: 38px;
   padding: 0 14px;
@@ -261,7 +261,7 @@
 }
 
 .social-action:hover {
-  background: #e84500;
+  background: var(--accent-strong);
 }
 
 @media (max-width: 860px) {

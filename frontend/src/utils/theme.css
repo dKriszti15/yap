@@ -1,0 +1,91 @@
+:root {
+  --app-bg: #0b0b0d;
+  --app-bg-soft: #111114;
+  --surface: rgba(18, 18, 22, 0.92);
+  --surface-strong: #17171b;
+  --surface-contrast: #202027;
+  --text: #f6f2ec;
+  --muted: #b0a79c;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 106, 0, 0.28);
+  --accent: #ff6a00;
+  --accent-strong: #ff8a1f;
+  --accent-soft: rgba(255, 106, 0, 0.14);
+  --accent-glow: rgba(255, 106, 0, 0.28);
+  --success: #31c48d;
+  --error: #ff5c4d;
+  --yellow: #ffcc66;
+  --input-bg: #141419;
+  --page-glow-1: rgba(255, 106, 0, 0.12);
+  --page-glow-2: rgba(255, 138, 31, 0.08);
+}
+
+html[data-theme="light"] {
+  --app-bg: #f9f2ea;
+  --app-bg-soft: #fff7ef;
+  --surface: rgba(255, 255, 255, 0.9);
+  --surface-strong: #ffffff;
+  --surface-contrast: #f4e6d8;
+  --text: #1f150d;
+  --muted: #6e5d4f;
+  --border: rgba(31, 21, 13, 0.12);
+  --border-strong: rgba(255, 106, 0, 0.24);
+  --accent: #ff6a00;
+  --accent-strong: #e85f00;
+  --accent-soft: rgba(255, 106, 0, 0.12);
+  --accent-glow: rgba(255, 106, 0, 0.2);
+  --success: #1f8f66;
+  --error: #cf3f2d;
+  --yellow: #efc24a;
+  --input-bg: #fffaf5;
+  --page-glow-1: rgba(255, 106, 0, 0.12);
+  --page-glow-2: rgba(255, 138, 31, 0.08);
+}
+
+html {
+  color-scheme: light;
+  background: var(--app-bg);
+  transition: background-color 0.28s ease, color 0.28s ease;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at top, var(--page-glow-1), transparent 32%),
+    radial-gradient(circle at 85% 12%, var(--page-glow-2), transparent 22%),
+    linear-gradient(180deg, var(--app-bg) 0%, var(--app-bg-soft) 100%);
+  color: var(--text);
+  font-family: "DM Sans", sans-serif;
+  transition: background 0.35s ease, color 0.28s ease;
+}
+
+a,
+button,
+input,
+textarea,
+select,
+.app-nav,
+.home-card,
+.social-shell,
+.card,
+.home-button,
+.social-card-action,
+.social-action,
+.social-form-input,
+.app-theme-toggle,
+.app-nav-link {
+  transition:
+    background-color 0.24s ease,
+    background 0.24s ease,
+    color 0.24s ease,
+    border-color 0.24s ease,
+    box-shadow 0.24s ease,
+    transform 0.16s ease,
+    opacity 0.24s ease;
+}
+
+::selection {
+  background: rgba(255, 106, 0, 0.3);
+  color: #ffffff;
+}

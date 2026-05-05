@@ -3,23 +3,26 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  background: #fff8f0;
-  color: #160e00;
+  background:
+    radial-gradient(circle at 20% 12%, rgba(255, 106, 0, 0.12), transparent 28%),
+    radial-gradient(circle at 80% 24%, rgba(255, 138, 31, 0.08), transparent 24%),
+    transparent;
+  color: var(--text);
 }
 
 .home-card {
   width: min(100%, 640px);
   padding: 40px;
-  border: 2px solid #ecddd0;
+  border: 1px solid var(--border);
   border-radius: 28px;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 18px 50px rgba(255, 77, 0, 0.08);
+  background: var(--surface);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 106, 0, 0.04) inset;
   backdrop-filter: blur(10px);
 }
 
 .home-kicker {
   margin: 0 0 10px;
-  color: #ff4d00;
+  color: var(--accent);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -39,7 +42,7 @@
   margin: 18px 0 28px;
   font-size: 1.05rem;
   line-height: 1.6;
-  color: #9c8c78;
+  color: var(--muted);
 }
 
 .home-button {
@@ -49,21 +52,21 @@
   min-height: 48px;
   padding: 0 20px;
   border-radius: 999px;
-  background: #ff4d00;
-  color: #fff;
+  background: var(--accent);
+  color: #120a00;
   text-decoration: none;
   font-weight: 700;
-  box-shadow: 0 12px 30px rgba(255, 77, 0, 0.24);
+  box-shadow: 0 10px 24px rgba(255, 106, 0, 0.22);
   transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
 
 .home-button:hover {
   transform: translateY(-1px);
-  background: #e84500;
-  box-shadow: 0 16px 34px rgba(255, 77, 0, 0.28);
+  background: var(--accent-strong);
+  box-shadow: 0 14px 28px rgba(255, 106, 0, 0.26);
 }
 
 .home-button:focus-visible {
-  outline: 3px solid rgba(255, 77, 0, 0.22);
+  outline: 3px solid var(--accent-glow);
   outline-offset: 3px;
 }
