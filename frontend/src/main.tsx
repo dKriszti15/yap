@@ -8,10 +8,13 @@ import ProfilePage from "./pages/profilePage";
 import type { AppLayoutProps } from "./types/app";
 import SocialPage from "./pages/socialPage";
 import { applyTheme, loadTheme } from "./utils/theme";
+import { usePresenceHeartbeat } from "./utils/usePresenceHeartbeat";
 
 applyTheme(loadTheme());
 
 function AppLayout(props: AppLayoutProps) {
+  usePresenceHeartbeat();
+
   return (
     <>
       <NavBar />

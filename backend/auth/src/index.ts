@@ -46,6 +46,36 @@ const jwks = createRemoteJWKSet(
   new URL(`${keycloakIssuer}/protocol/openid-connect/certs`),
 );
 
+const PRESENCE_TTL_MS = 90_000;
+const activeUsers = new Map<string, number>();
+
+function markUserActive(sub: string) {
+  activeUsers.set(sub, Date.now());
+}
+
+function isUserActive(sub: string): boolean {
+  const lastSeen = activeUsers.get(sub);
+  if (!lastSeen) {
+    return false;
+  }
+
+  if (Date.now() - lastSeen > PRESENCE_TTL_MS) {
+    activeUsers.delete(sub);
+    return false;
+  }
+
+  return true;
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [sub, lastSeen] of activeUsers) {
+    if (now - lastSeen > PRESENCE_TTL_MS) {
+      activeUsers.delete(sub);
+    }
+  }
+}, 60_000).unref();
+
 class TokenValidationError extends Error {}
 
 function hasExpectedAudience(audClaim: unknown, expectedAudience: string): boolean {
@@ -231,6 +261,50 @@ app.get("/me", async (request, reply) => {
   }
 });
 
+app.post("/presence/heartbeat", async (request, reply) => {
+  try {
+    const auth = await getAuthenticatedUser(request);
+    if (!auth.ok) {
+      return reply.code(auth.statusCode).send({
+        ok: false,
+        error: auth.error,
+      });
+    }
+
+    markUserActive(auth.user.sub);
+
+    return {
+      ok: true,
+      online: true,
+    };
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ ok: false, error: "Failed to update presence" });
+  }
+});
+
+app.post("/presence/offline", async (request, reply) => {
+  try {
+    const auth = await getAuthenticatedUser(request);
+    if (!auth.ok) {
+      return reply.code(auth.statusCode).send({
+        ok: false,
+        error: auth.error,
+      });
+    }
+
+    activeUsers.delete(auth.user.sub);
+
+    return {
+      ok: true,
+      online: false,
+    };
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ ok: false, error: "Failed to clear presence" });
+  }
+});
+
 app.get("/social/overview", async (request, reply) => {
   try {
     const auth = await getAuthenticatedUser(request);
@@ -245,6 +319,7 @@ app.get("/social/overview", async (request, reply) => {
       .select({
         id: users.id,
         username: users.username,
+        sub: users.sub,
       })
       .from(friendships)
       .innerJoin(users, eq(users.id, friendships.friendId))
@@ -277,7 +352,7 @@ app.get("/social/overview", async (request, reply) => {
       friends: friendRows.map((row) => ({
         id: row.id,
         username: row.username,
-        status: "offline",
+        status: isUserActive(row.sub) ? "online" : "offline",
       })),
       groups: groupRows.map((row) => ({
         id: row.id,
@@ -313,6 +388,7 @@ app.post("/social/friends", async (request, reply) => {
       .select({
         id: users.id,
         username: users.username,
+        sub: users.sub,
       })
       .from(users)
       .where(ilike(users.username, username))
@@ -345,7 +421,7 @@ app.post("/social/friends", async (request, reply) => {
       friend: {
         id: friendUser.id,
         username: friendUser.username,
-        status: "offline",
+        status: isUserActive(friendUser.sub) ? "online" : "offline",
       },
     };
   } catch (error) {

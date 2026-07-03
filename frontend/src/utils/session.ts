@@ -15,6 +15,24 @@ export function getAuthApiBaseUrl(): string {
   return import.meta.env.VITE_AUTH_URL ?? "http://localhost:4001";
 }
 
+export async function notifyPresenceOffline(): Promise<void> {
+  const session = loadAuthSession();
+  if (!session?.access_token) {
+    return;
+  }
+
+  try {
+    await fetch(`${getAuthApiBaseUrl()}/presence/offline`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${session.access_token}`,
+      },
+    });
+  } catch {
+    return;
+  }
+}
+
 export function saveAuthSession(session: AuthSession) {
   const stored: StoredAuthSession = {
     ...session,

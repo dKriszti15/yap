@@ -6,6 +6,7 @@ import {
   getAuthApiBaseUrl,
   loadAuthSession,
   loadCurrentUser,
+  notifyPresenceOffline,
   saveCurrentUser,
 } from "../utils/session";
 import type { MeResponse } from "../types/profile";
@@ -55,7 +56,8 @@ export default function ProfilePage() {
     }
   });
 
-  function signOut() {
+  async function signOut() {
+    await notifyPresenceOffline();
     clearAuthState();
     setCachedUser(null);
     navigate("/auth", { replace: true });
