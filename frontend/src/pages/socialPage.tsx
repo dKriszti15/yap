@@ -256,7 +256,11 @@ export default function SocialPage() {
                                                     </div>
                                                     <div>
                                                         <p class="social-name">{friend.username}</p>
-                                                        <p class="social-sub">{friend.status ?? "offline"}</p>
+                                                        <span
+                                                            class={`social-status ${friend.status === "online" ? "is-online" : "is-offline"}`}
+                                                            aria-label={friend.status === "online" ? "Online" : "Offline"}
+                                                            title={friend.status === "online" ? "Online" : "Offline"}
+                                                        />
                                                     </div>
                                                 </li>
                                             )}
