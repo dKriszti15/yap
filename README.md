@@ -2,6 +2,10 @@
 
 Performant Discord alternative.
 
+## CI / CD
+
+GitHub Actions runs `pnpm build` on every pull request and push to `main`.
+
 ## Local infra
 
 Start PostgreSQL, Redis, Typesense, and Keycloak:
